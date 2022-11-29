@@ -1,0 +1,21 @@
+# data
+data_path: ""
+image_size: 128
+
+# logging
+wandb_on: false
+wandb_log_period: 50
+pictures_log_period: 150
+
+# device
+device: "cuda:0"
+
+# learning params
+from_checkpoint: false
+learning_rate: 0.002
+batch_size: 4
+
+# training
+training_steps: 150000
+save_checkpoint_path: "checkpoints"
+save_checkpoint_period: 500
