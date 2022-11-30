@@ -282,11 +282,11 @@ class Trainer:
         # Accumulate gradients for `gradient_accumulate_steps`
         for i in range(self.gradient_accumulate_steps):
             s_real, s_pose, s_app, t_real, t_pose = next(self.loader)
-            s_real = s_real.to(self.device)
-            s_pose = s_pose.to(self.device)
-            s_app = s_app.to(self.device)
-            t_real = t_real.to(self.device)
-            t_pose = t_pose.to(self.device)
+            s_real = self.transforms(s_real).to(self.device)
+            s_pose = self.transforms(s_pose).to(self.device)
+            s_app = self.transforms(s_app).to(self.device)
+            t_real = self.transforms(t_real).to(self.device)
+            t_pose = self.transforms(t_pose).to(self.device)
 
             # Sample images from generator
             s_restored, s_transferred, s_app_enc = \
