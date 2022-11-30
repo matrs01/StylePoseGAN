@@ -26,12 +26,13 @@ class FashionDataset(Dataset):
         return len(self.files)
 
     def load_file(self, file: Path):
+        file = str(file)
         if file in self.cache:
             return self.cache[file]
 
         image = cv2.imread(file)
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-        image = torch.from_numpy(np.transpose(image, (0, 3, 1, 2)) / 255)
+        image = torch.from_numpy(np.transpose(image, (2, 0, 1)) / 255).float()
         self.cache[file] = image
         return image
 

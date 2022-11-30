@@ -316,6 +316,10 @@ class Trainer:
                                 s_transferred[0])
 
     def _show_pictures(self, a, b, c, d):
+        a = a.detach().cpu()
+        b = b.detach().cpu()
+        c = c.detach().cpu()
+        d = d.detach().cpu()
         images = (torchvision.utils.make_grid([a, b, c, d],
                                               nrow=4,
                                               normalize=False)

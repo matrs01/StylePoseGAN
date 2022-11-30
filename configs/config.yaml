@@ -1,9 +1,9 @@
 # data
-data_path: ""
+data_path: "/data/bvshelhonov/fashion_data/data"
 image_size: 128
 
 # logging
-wandb_on: false
+wandb_on: true
 wandb_log_period: 50
 pictures_log_period: 150
 
