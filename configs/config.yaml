@@ -4,18 +4,18 @@ image_size: 128
 
 # logging
 wandb_on: true
-wandb_log_period: 50
+wandb_log_period: 25
 pictures_log_period: 150
 
 # device
 device: "cuda:0"
 
 # learning params
-from_checkpoint: false
+from_checkpoint: "/data/bvshelhonov/Projects/StylePoseGAN/checkpoints/step=16010.pt"
 learning_rate: 0.002
 batch_size: 4
 
 # training
 training_steps: 150000
 save_checkpoint_path: "checkpoints"
-save_checkpoint_period: 500
+save_checkpoint_period: 2500

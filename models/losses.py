@@ -1,8 +1,7 @@
 import torch.utils.data
-from torch.nn import functional as F
-
-from labml_helpers.module import Module
 from DISTS_pytorch import DISTS
+from labml_helpers.module import Module
+from torch.nn import functional as F
 
 from models.net_sphere import FaceNetWithUpsample
 
@@ -26,11 +25,20 @@ class ReconstructionLoss(Module):
         self.vgg_loss = DISTS()
         self.face_loss = FaceIdentityLoss()
 
-    def __call__(self, real: torch.Tensor, restored: torch.Tensor):
+        self.last = dict()
+
+    def __call__(self, real: torch.Tensor, restored: torch.Tensor, label: str):
         l1_loss = F.l1_loss(real, restored)
         vgg_loss = self.vgg_loss(real, restored, require_grad=True,
                                  batch_average=True)
         face_loss = self.face_loss(real, restored)
+
+        self.last.update([
+            (label + "_l1_loss", l1_loss.item()),
+            (label + "_vgg_loss", vgg_loss.item()),
+            (label + "_face_loss", face_loss.item())
+        ])
+
         return l1_loss + vgg_loss + face_loss
 
 

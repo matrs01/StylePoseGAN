@@ -127,6 +127,9 @@ class Trainer:
 
         wandb.watch(self.generator, log_freq=100)
 
+        if self.config["from_checkpoint"]:
+            self.load_checkpoint(self.config["from_checkpoint"])
+
     def save_checkpoint(self,
                         save: bool = True
                         ) -> Dict[Any, Any]:
@@ -148,12 +151,11 @@ class Trainer:
         return checkpoint
 
     def load_checkpoint(self,
-                        checkpoint_path: Path,
+                        checkpoint_path: str,
                         ) -> None:
         checkpoint = torch.load(checkpoint_path)
-        self.generator.load_state_dict(checkpoint["generator_state_dict"])
-        self.discriminator.load_state_dict(checkpoint[
-                                               "discriminator_state_dict"])
+        self.generator.load_state_dict(checkpoint["gen_state_dict"])
+        self.discriminator.load_state_dict(checkpoint["disc_state_dict"])
         self.pnet.load_state_dict(checkpoint["pnet_state_dict"])
         self.anet.load_state_dict(checkpoint["anet_state_dict"])
 
@@ -211,14 +213,14 @@ class Trainer:
         s_pose_enc = self.pnet(s_pose)
         t_pose_enc = self.pnet(t_pose)
         # Get noise
-        noise = self.get_noise(batch_size)
+        s_noise = self.get_noise(batch_size)
+        t_noise = self.get_noise(batch_size)
 
         s_app_enc = s_app_enc[None, :, :].expand(self.n_gen_blocks, -1, -1)
 
         # Generate images
-        restored = self.generator(s_pose_enc, s_app_enc, noise)
-        # TODO: same noise?
-        transferred = self.generator(t_pose_enc, s_app_enc, noise)
+        restored = self.generator(s_pose_enc, s_app_enc, s_noise)
+        transferred = self.generator(t_pose_enc, s_app_enc, t_noise)
 
         # Return images and $w$
         return restored, transferred, s_app_enc
@@ -296,14 +298,17 @@ class Trainer:
                           self.discriminator(s_transferred)
 
             # Get generator loss
-            gen_loss = self.generator_loss(fake_output) + \
-                       self.reconstruction_loss(s_real, s_restored) + \
-                       self.reconstruction_loss(t_real, s_transferred)
+            gen_loss = self.generator_loss(fake_output)
+            self.rec_loss = self.reconstruction_loss(s_real, s_restored,
+                                                     "s") + \
+                            self.reconstruction_loss(t_real, s_transferred,
+                                                     "t")
 
             # Calculate gradients
             gen_loss.backward()
 
             self.losses["gen_loss"] = gen_loss.item()
+            self.losses.update(self.reconstruction_loss.last.items())
 
         # Clip gradients for stabilization
         torch.nn.utils.clip_grad_norm_(self.generator.parameters(),
